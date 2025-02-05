@@ -3,11 +3,12 @@
         "name": "Emby联动删除",
         "description": "Emby删除媒体信息同步删除硬连接",
         "labels": "媒体管理",
-        "version": "0.5",
+        "version": "0.6",
         "icon": "mediaplay.png",
         "author": "dzplus",
         "level": 2,
         "history": {
+            "v0.6": "加一个下载完成事件验证2",
             "v0.5": "加一个下载完成事件验证",
             "v0.4": "单纯验证事件功能+",
             "v0.3": "增加一些事件注册+",
