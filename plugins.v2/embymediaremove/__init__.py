@@ -80,6 +80,7 @@ class EmbyMediaRemove(_PluginBase):
         ], {
             "enabled": self._enabled
         }
+
     @staticmethod
     def get_command() -> List[Dict[str, Any]]:
         """
