@@ -3,11 +3,12 @@
         "name": "Emby联动删除",
         "description": "Emby删除媒体信息同步删除硬连接",
         "labels": "Emby删除媒体信息同步删除硬连接",
-        "version": "0.1",
+        "version": "0.2",
         "icon": "mediaplay.png",
         "author": "dzplus",
         "level": 1,
         "history": {
+            "v0.2": "支持Emby联动删除+",
             "v0.1": "支持Emby联动删除"
         }
     }
