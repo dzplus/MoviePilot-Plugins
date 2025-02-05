@@ -9,7 +9,6 @@ from app.plugins import _PluginBase
 from app.schemas.types import EventType, MediaType, MediaImageType, NotificationType
 
 
-
 class EmbyMediaRemove(_PluginBase):
     # 插件名称
     plugin_name = "Emby联动删除"
@@ -35,16 +34,10 @@ class EmbyMediaRemove(_PluginBase):
     _enabled = True
     _add_play_link = False
     _mediaservers = None
-    _types = []
-    _webhook_msg_keys = {}
 
     def init_plugin(self, config: dict = None):
         self.mediaserver_helper = MediaServerHelper()
         logger.info("init_plugin invoke")
-
-    @staticmethod
-    def get_command() -> List[Dict[str, Any]]:
-        pass
 
     def get_api(self) -> List[Dict[str, Any]]:
         pass
@@ -102,9 +95,24 @@ class EmbyMediaRemove(_PluginBase):
                 ]
             }
         ], {
-            "enabled": True,
-            "types": []
+            "enabled": True
         }
+
+    @staticmethod
+    def get_command() -> List[Dict[str, Any]]:
+        """
+        定义远程控制命令
+        :return: 命令关键字、事件、描述、附带数据
+        """
+        return [{
+            "cmd": "/emby_sync",
+            "event": EventType.PluginAction,
+            "desc": "触发一次同步",
+            "category": "同步",
+            "data": {
+                "action": "emby_sync"
+            }
+        }]
 
     @eventmanager.register(EventType.PluginReload)
     def pluginReload(self, event: Event):
