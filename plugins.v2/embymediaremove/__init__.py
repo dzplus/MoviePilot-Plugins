@@ -38,23 +38,19 @@ class EmbyMediaRemove(_PluginBase):
     _types = []
     _webhook_msg_keys = {}
 
-    #初始化插件
     def init_plugin(self, config: dict = None):
         self.mediaserver_helper = MediaServerHelper()
         if config:
             self._enabled = config.get("enabled")
         logger.info("init_plugin invoke")
 
-    #发送事件
     @staticmethod
     def get_command() -> List[Dict[str, Any]]:
         pass
 
-    #从此插件暴露接口
     def get_api(self) -> List[Dict[str, Any]]:
         pass
 
-    #设定插件外观
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         logger.info("get_form invoke")
         """
@@ -115,65 +111,50 @@ class EmbyMediaRemove(_PluginBase):
     @eventmanager.register(EventType.PluginReload)
     def pluginReload(self, event: Event):
         logger.info("pluginReload invoke")
-        logger.info(event)
 
     @eventmanager.register(EventType.PluginAction)
     def pluginAction(self, event: Event):
         logger.info("PluginAction invoke")
-        logger.info(event)
-        if not event or event.get("action") != "embyremove":
-            return
 
     @eventmanager.register(EventType.SiteDeleted)
     def siteDeleted(self, event: Event):
         logger.info("SiteDeleted invoke")
-        logger.info(event)
 
     @eventmanager.register(EventType.DownloadAdded)
     def downloadAdded(self, event: Event):
         logger.info("DownloadAdded invoke")
-        logger.info(event)
 
     @eventmanager.register(EventType.HistoryDeleted)
     def historyDeleted(self, event: Event):
         logger.info("HistoryDeleted invoke")
-        logger.info(event)
 
     @eventmanager.register(EventType.NoticeMessage)
     def noticeMessage(self, event: Event):
         logger.info("NoticeMessage invoke")
-        logger.info(event)
-        logger.info("NoticeMessage invoke down")
 
     @eventmanager.register(EventType.TransferComplete)
     def transferComplete(self, event: Event):
         logger.info("transferComplete invoke")
-        logger.info(event)
 
     @eventmanager.register(EventType.SubscribeAdded)
     def subscribeAdded(self, event: Event):
         logger.info("SubscribeAdded invoke")
-        logger.info(event)
 
     @eventmanager.register(EventType.SubscribeComplete)
     def subscribeComplete(self, event: Event):
         logger.info("SubscribeComplete invoke")
-        logger.info(event)
 
     @eventmanager.register(EventType.SystemError)
     def systemError(self, event: Event):
         logger.info("SystemError invoke")
-        logger.info(event)
 
     @eventmanager.register(EventType.SiteUpdated)
-    def SiteUpdated(self, event: Event):
+    def siteUpdated(self, event: Event):
         logger.info("SiteUpdated invoke")
-        logger.info(event)
 
     @eventmanager.register(EventType.WebhookMessage)
     def send(self, event: Event):
         logger.info("send invoke")
-        logger.info(event)
 
     def stop_service(self):
         logger.info("stop_service")
