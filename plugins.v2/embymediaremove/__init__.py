@@ -15,7 +15,7 @@ class EmbyMediaRemove(_PluginBase):
     # 插件图标
     plugin_icon = "mediaplay.png"
     # 插件版本
-    plugin_version = "0.8"
+    plugin_version = "0.9"
     # 插件作者
     plugin_author = "dzplus"
     # 作者主页
@@ -95,14 +95,10 @@ class EmbyMediaRemove(_PluginBase):
             }
         }]
 
-    @eventmanager.register(EventType.DownloadCompleted)
+    @eventmanager.register(EventType.DownloadAdded)
     def on_download_completed(self, event: Event):
-        """
-        处理下载完成事件
-        """
-        logger.info(f"下载完成事件触发: {event}")
+        logger.info(f"下载添加事件触发: {event}")
         # 在这里可以添加处理下载完成事件的具体逻辑
 
     def stop_service(self):
         logger.info("stop_service")
-        pass
