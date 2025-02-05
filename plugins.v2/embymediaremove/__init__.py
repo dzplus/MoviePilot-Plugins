@@ -108,7 +108,7 @@ class EmbyMediaRemove(_PluginBase):
                 ]
             }
         ], {
-            "enabled": False,
+            "enabled": True,
             "types": []
         }
 
