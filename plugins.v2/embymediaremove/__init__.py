@@ -81,19 +81,7 @@ class EmbyMediaRemove(_PluginBase):
 
     @staticmethod
     def get_command() -> List[Dict[str, Any]]:
-        """
-        定义远程控制命令
-        :return: 命令关键字、事件、描述、附带数据
-        """
-        return [{
-            "cmd": "/emby_sync",
-            "event": EventType.PluginAction,
-            "desc": "触发一次同步",
-            "category": "同步",
-            "data": {
-                "action": "emby_sync"
-            }
-        }]
+        pass
 
     @eventmanager.register(EventType.DownloadAdded)
     def on_download_completed(self, event: Event):
