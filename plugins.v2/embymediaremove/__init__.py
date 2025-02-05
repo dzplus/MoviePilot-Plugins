@@ -19,7 +19,7 @@ class EmbyMediaRemove(_PluginBase):
     # 插件图标
     plugin_icon = "mediaplay.png"
     # 插件版本
-    plugin_version = "0.2"
+    plugin_version = "0.3"
     # 插件作者
     plugin_author = "dzplus"
     # 作者主页
@@ -51,7 +51,8 @@ class EmbyMediaRemove(_PluginBase):
         "media.stop": "停止播放",
         "PlaybackStart": "开始播放",
         "PlaybackStop": "停止播放",
-        "item.rate": "标记了"
+        "item.rate": "标记了",
+        "library.deleted": "删除媒体"
     }
     _webhook_images = {
         "emby": "https://emby.media/notificationicon.png",
@@ -91,7 +92,6 @@ class EmbyMediaRemove(_PluginBase):
                 active_services[service_name] = service_info
 
         if not active_services:
-            logger.info("没有已连接的媒体服务器，请检查配置")
             return None
         logger.info(active_services)
         return active_services
@@ -105,7 +105,7 @@ class EmbyMediaRemove(_PluginBase):
         return service_infos.get(name)
 
     def get_state(self) -> bool:
-        logger.info("get_state invoke")
+        logger.info("get_state " + self._enabled)
         return self._enabled
 
     @staticmethod
@@ -175,22 +175,82 @@ class EmbyMediaRemove(_PluginBase):
     def get_page(self) -> List[dict]:
         pass
 
+    @eventmanager.register(EventType.PluginReload)
+    def pluginReload(self, event: Event):
+        logger.info("pluginReload invoke")
+        logger.info(event.event_data)
+
+    @eventmanager.register(EventType.PluginAction)
+    def PluginAction(self, event: Event):
+        logger.info("PluginAction invoke")
+        logger.info(event.action)
+        if not event or event.get("action") != "embyremove":
+            return
+
+    @eventmanager.register(EventType.SiteDeleted)
+    def SiteDeleted(self, event: Event):
+        logger.info("SiteDeleted invoke")
+        logger.info(event.event_data)
+
+    @eventmanager.register(EventType.DownloadAdded)
+    def DownloadAdded(self, event: Event):
+        logger.info("DownloadAdded invoke")
+        logger.info(event.event_data)
+
+    @eventmanager.register(EventType.HistoryDeleted)
+    def HistoryDeleted(self, event: Event):
+        logger.info("HistoryDeleted invoke")
+        logger.info(event.event_data)
+
+    @eventmanager.register(EventType.NoticeMessage)
+    def NoticeMessage(self, event: Event):
+        logger.info("NoticeMessage invoke")
+        logger.info(event.event_data)
+
+    @eventmanager.register(EventType.SubscribeAdded)
+    def SubscribeAdded(self, event: Event):
+        logger.info("SubscribeAdded invoke")
+        logger.info(event.event_data)
+
+    @eventmanager.register(EventType.SubscribeComplete)
+    def SubscribeComplete(self, event: Event):
+        logger.info("SubscribeComplete invoke")
+        logger.info(event.event_data)
+
+    @eventmanager.register(EventType.SystemError)
+    def SystemError(self, event: Event):
+        logger.info("SystemError invoke")
+        logger.info(event.event_data)
+
+
+    @eventmanager.register(EventType.SiteUpdated)
+    def SiteUpdated(self, event: Event):
+        logger.info("SiteUpdated invoke")
+        logger.info(event.event_data)
+
+    @eventmanager.register(EventType.PluginReload)
+    def pluginReload(self, event: Event):
+        logger.info("pluginReload invoke")
+        logger.info(event.event_data)
+
     @eventmanager.register(EventType.WebhookMessage)
     def send(self, event: Event):
         logger.info("send invoke")
         """
         发送通知消息
         """
-        logger.info(event.event_data)
+        logger.info(event)
         if not self._enabled:
             return
 
         event_info: WebhookEventInfo = event.event_data
         if not event_info:
+            logger.info("not event_info")
             return
 
         # 不在支持范围不处理
         if not self._webhook_actions.get(event_info.event):
+            logger.info("not self._webhook_actions.get(event_info.event)")
             return
 
         # 不在选中范围不处理

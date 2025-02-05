@@ -8,6 +8,7 @@
         "author": "dzplus",
         "level": 1,
         "history": {
+            "v0.3": "增加一些事件注册+",
             "v0.2": "支持Emby联动删除+",
             "v0.1": "支持Emby联动删除"
         }
