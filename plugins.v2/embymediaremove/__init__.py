@@ -30,22 +30,26 @@ class EmbyMediaRemove(_PluginBase):
     auth_level = 2
 
     # 私有属性
-    mediaserver_helper = None
-    _enabled = True
-    _add_play_link = False
-    _mediaservers = None
+    _enabled = False
 
     def init_plugin(self, config: dict = None):
-        self.mediaserver_helper = MediaServerHelper()
-        logger.info("init_plugin invoke")
-
-    def get_api(self) -> List[Dict[str, Any]]:
-        pass
-
-    def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
-        logger.info("get_form invoke")
         """
-        拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
+        初始化插件
+        :param config: 插件配置信息
+        """
+        if config:
+            self._enabled = config.get("enabled", False)
+        logger.info(f"插件 {self.plugin_name} 初始化完成，启用状态: {self._enabled}")
+
+    def get_api(self):
+        """
+        获取插件 API
+        """
+        return []
+
+    def get_form(self):
+        """
+        获取插件配置表单
         """
         return [
             {
@@ -70,34 +74,12 @@ class EmbyMediaRemove(_PluginBase):
                                 ]
                             }
                         ]
-                    },
-                    {
-                        'component': 'VRow',
-                        'content': [
-                            {
-                                'component': 'VCol',
-                                'props': {
-                                    'cols': 12
-                                },
-                                'content': [
-                                    {
-                                        'component': 'VAlert',
-                                        'props': {
-                                            'type': 'info',
-                                            'variant': 'tonal',
-                                            'text': '需要设置媒体服务器Webhook，回调相对路径为 /api/v1/webhook?token=API_TOKEN&source=媒体服务器名（3001端口），其中 API_TOKEN 为设置的 API_TOKEN。'
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
                     }
                 ]
             }
         ], {
-            "enabled": True
+            "enabled": self._enabled
         }
-
     @staticmethod
     def get_command() -> List[Dict[str, Any]]:
         """
