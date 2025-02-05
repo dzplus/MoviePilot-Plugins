@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import Any, List, Dict, Tuple, Optional
 
@@ -10,21 +11,21 @@ from app.schemas.types import EventType, MediaType, MediaImageType, Notification
 from app.utils.web import WebUtils
 
 
-class MediaServerMsg(_PluginBase):
+class EmbyMediaRemove(_PluginBase):
     # 插件名称
-    plugin_name = "媒体库服务器通知"
+    plugin_name = "Emby联动删除"
     # 插件描述
-    plugin_desc = "发送Emby/Jellyfin/Plex服务器的播放、入库等通知消息。"
+    plugin_desc = "Emby删除媒体信息同步删除硬连接"
     # 插件图标
     plugin_icon = "mediaplay.png"
     # 插件版本
-    plugin_version = "1.5"
+    plugin_version = "0.1"
     # 插件作者
-    plugin_author = "jxxghp"
+    plugin_author = "dzplus"
     # 作者主页
-    author_url = "https://github.com/jxxghp"
+    author_url = "https://github.com/dzplus"
     # 插件配置项ID前缀
-    plugin_config_prefix = "mediaservermsg_"
+    plugin_config_prefix = "embymediaremove_"
     # 加载顺序
     plugin_order = 14
     # 可使用的用户级别
@@ -71,25 +72,26 @@ class MediaServerMsg(_PluginBase):
         服务信息
         """
         if not self._mediaservers:
-            logger.warning("尚未配置媒体服务器，请检查配置")
+            logger.info("尚未配置媒体服务器，请检查配置")
             return None
-
+        
         services = self.mediaserver_helper.get_services(type_filter=type_filter, name_filters=self._mediaservers)
         if not services:
-            logger.warning("获取媒体服务器实例失败，请检查配置")
+            logger.info("获取媒体服务器实例失败，请检查配置")
             return None
-
+        logger.info(services)
         active_services = {}
         for service_name, service_info in services.items():
+            logger.info(service_name)
             if service_info.instance.is_inactive():
-                logger.warning(f"媒体服务器 {service_name} 未连接，请检查配置")
+                logger.info(f"媒体服务器 {service_name} 未连接，请检查配置")
             else:
                 active_services[service_name] = service_info
 
         if not active_services:
-            logger.warning("没有已连接的媒体服务器，请检查配置")
+            logger.info("没有已连接的媒体服务器，请检查配置")
             return None
-
+        logger.info(active_services)
         return active_services
 
     def service_info(self, name: str) -> Optional[ServiceInfo]:
@@ -113,15 +115,6 @@ class MediaServerMsg(_PluginBase):
         """
         拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
         """
-        types_options = [
-            {"title": "新入库", "value": "library.new"},
-            {"title": "开始播放", "value": "playback.start|media.play|PlaybackStart"},
-            {"title": "停止播放", "value": "playback.stop|media.stop|PlaybackStop"},
-            {"title": "用户标记", "value": "item.rate"},
-            {"title": "测试", "value": "system.webhooktest"},
-            {"title": "登录成功", "value": "user.authenticated"},
-            {"title": "登录失败", "value": "user.authenticationfailed"},
-        ]
         return [
             {
                 'component': 'VForm',
@@ -132,31 +125,14 @@ class MediaServerMsg(_PluginBase):
                             {
                                 'component': 'VCol',
                                 'props': {
-                                    'cols': 12,
-                                    'md': 6
+                                    'cols': 12
                                 },
                                 'content': [
                                     {
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'enabled',
-                                            'label': '启用插件',
-                                        }
-                                    }
-                                ]
-                            },
-                            {
-                                'component': 'VCol',
-                                'props': {
-                                    'cols': 12,
-                                    'md': 6
-                                },
-                                'content': [
-                                    {
-                                        'component': 'VSwitch',
-                                        'props': {
-                                            'model': 'add_play_link',
-                                            'label': '添加播放链接',
+                                            'label': '启用插件'
                                         }
                                     }
                                 ]
@@ -170,54 +146,6 @@ class MediaServerMsg(_PluginBase):
                                 'component': 'VCol',
                                 'props': {
                                     'cols': 12
-                                },
-                                'content': [
-                                    {
-                                        'component': 'VSelect',
-                                        'props': {
-                                            'multiple': True,
-                                            'chips': True,
-                                            'clearable': True,
-                                            'model': 'mediaservers',
-                                            'label': '媒体服务器',
-                                            'items': [{"title": config.name, "value": config.name}
-                                                      for config in self.mediaserver_helper.get_configs().values()]
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        'component': 'VRow',
-                        'content': [
-                            {
-                                'component': 'VCol',
-                                'props': {
-                                    'cols': 12,
-                                },
-                                'content': [
-                                    {
-                                        'component': 'VSelect',
-                                        'props': {
-                                            'chips': True,
-                                            'multiple': True,
-                                            'model': 'types',
-                                            'label': '消息类型',
-                                            'items': types_options
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        'component': 'VRow',
-                        'content': [
-                            {
-                                'component': 'VCol',
-                                'props': {
-                                    'cols': 12,
                                 },
                                 'content': [
                                     {
@@ -247,6 +175,7 @@ class MediaServerMsg(_PluginBase):
         """
         发送通知消息
         """
+        logger.info(event.event_data)
         if not self._enabled:
             return
 
@@ -280,13 +209,6 @@ class MediaServerMsg(_PluginBase):
             logger.info(f"未开启媒体服务器类型 {event_info.channel} 的消息通知")
             return
 
-        expiring_key = f"{event_info.item_id}-{event_info.client}-{event_info.user_name}"
-        # 过滤停止播放重复消息
-        if str(event_info.event) == "playback.stop" and expiring_key in self._webhook_msg_keys.keys():
-            # 刷新过期时间
-            self.__add_element(expiring_key)
-            return
-
         # 消息标题
         if event_info.item_type in ["TV", "SHOW"]:
             message_title = f"{self._webhook_actions.get(event_info.event)}剧集 {event_info.item_name}"
@@ -296,7 +218,7 @@ class MediaServerMsg(_PluginBase):
             message_title = f"{self._webhook_actions.get(event_info.event)}有声书 {event_info.item_name}"
         else:
             message_title = f"{self._webhook_actions.get(event_info.event)}"
-
+        logging.info(message_title)
         # 消息内容
         message_texts = []
         if event_info.user_name:
@@ -314,49 +236,7 @@ class MediaServerMsg(_PluginBase):
 
         # 消息内容
         message_content = "\n".join(message_texts)
-
-        # 消息图片
-        image_url = event_info.image_url
-        # 查询剧集图片
-        if (event_info.tmdb_id
-                and event_info.season_id
-                and event_info.episode_id):
-            specific_image = self.chain.obtain_specific_image(
-                mediaid=event_info.tmdb_id,
-                mtype=MediaType.TV,
-                image_type=MediaImageType.Backdrop,
-                season=event_info.season_id,
-                episode=event_info.episode_id
-            )
-            if specific_image:
-                image_url = specific_image
-        # 使用默认图片
-        if not image_url:
-            image_url = self._webhook_images.get(event_info.channel)
-
-        play_link = None
-        if self._add_play_link:
-            if event_info.server_name:
-                service = self.service_infos().get(event_info.server_name)
-                if service:
-                    play_link = service.instance.get_play_url(event_info.item_id)
-            elif event_info.channel:
-                services = self.mediaserver_helper.get_services(type_filter=event_info.channel)
-                for service in services.values():
-                    play_link = service.instance.get_play_url(event_info.item_id)
-                    if play_link:
-                        break
-
-        if str(event_info.event) == "playback.stop":
-            # 停止播放消息，添加到过期字典
-            self.__add_element(expiring_key)
-        if str(event_info.event) == "playback.start":
-            # 开始播放消息，删除过期字典
-            self.__remove_element(expiring_key)
-
-        # 发送消息
-        self.post_message(mtype=NotificationType.MediaServer,
-                          title=message_title, text=message_content, image=image_url, link=play_link)
+        logging.info(message_content)
 
     def __add_element(self, key, duration=600):
         expiration_time = time.time() + duration
@@ -376,4 +256,5 @@ class MediaServerMsg(_PluginBase):
         """
         退出插件
         """
+        logging.info("退出插件")
         pass
