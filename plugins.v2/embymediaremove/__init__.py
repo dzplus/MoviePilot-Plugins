@@ -40,8 +40,6 @@ class EmbyMediaRemove(_PluginBase):
 
     def init_plugin(self, config: dict = None):
         self.mediaserver_helper = MediaServerHelper()
-        if config:
-            self._enabled = config.get("enabled")
         logger.info("init_plugin invoke")
 
     @staticmethod
