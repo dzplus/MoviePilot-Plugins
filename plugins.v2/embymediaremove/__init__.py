@@ -66,11 +66,13 @@ class EmbyMediaRemove(_PluginBase):
             self._types = config.get("types") or []
             self._mediaservers = config.get("mediaservers") or []
             self._add_play_link = config.get("add_play_link", False)
+        logger.info("init_plugin invoke")
 
     def service_infos(self, type_filter: Optional[str] = None) -> Optional[Dict[str, ServiceInfo]]:
         """
         服务信息
         """
+        logger.info("service_infos invoke")
         if not self._mediaservers:
             logger.info("尚未配置媒体服务器，请检查配置")
             return None
@@ -98,10 +100,12 @@ class EmbyMediaRemove(_PluginBase):
         """
         服务信息
         """
+        logger.info("service_info invoke")
         service_infos = self.service_infos() or {}
         return service_infos.get(name)
 
     def get_state(self) -> bool:
+        logger.info("get_state invoke")
         return self._enabled
 
     @staticmethod
@@ -112,6 +116,7 @@ class EmbyMediaRemove(_PluginBase):
         pass
 
     def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
+        logger.info("get_form invoke")
         """
         拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
         """
@@ -172,6 +177,7 @@ class EmbyMediaRemove(_PluginBase):
 
     @eventmanager.register(EventType.WebhookMessage)
     def send(self, event: Event):
+        logger.info("send invoke")
         """
         发送通知消息
         """
