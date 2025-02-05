@@ -144,6 +144,14 @@ class EmbyMediaRemove(_PluginBase):
     def send(self, event: Event):
         logger.info("send invoke")
 
+    @eventmanager.register(EventType.DownloadCompleted)
+    def on_download_completed(self, event: Event):
+        """
+        处理下载完成事件
+        """
+        logger.info(f"下载完成事件触发: {event}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
     def stop_service(self):
         logger.info("stop_service")
         pass
