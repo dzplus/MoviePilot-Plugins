@@ -1,5 +1,3 @@
-import logging
-
 from typing import Any, List, Dict, Tuple, Optional
 
 from app.core.event import eventmanager, Event
@@ -17,7 +15,7 @@ class EmbyMediaRemove(_PluginBase):
     # 插件图标
     plugin_icon = "mediaplay.png"
     # 插件版本
-    plugin_version = "0.6"
+    plugin_version = "0.8"
     # 插件作者
     plugin_author = "dzplus"
     # 作者主页
@@ -41,13 +39,13 @@ class EmbyMediaRemove(_PluginBase):
             self._enabled = config.get("enabled", False)
         logger.info(f"插件 {self.plugin_name} 初始化完成，启用状态: {self._enabled}")
 
-    def get_api(self):
+    def get_api(self) -> List[Dict[str, Any]]:
         """
         获取插件 API
         """
         return []
 
-    def get_form(self):
+    def get_form(self) -> Tuple[List[dict], Dict[str, Any]]:
         """
         获取插件配置表单
         """
@@ -96,54 +94,6 @@ class EmbyMediaRemove(_PluginBase):
                 "action": "emby_sync"
             }
         }]
-
-    @eventmanager.register(EventType.PluginReload)
-    def pluginReload(self, event: Event):
-        logger.info("pluginReload invoke")
-
-    @eventmanager.register(EventType.PluginAction)
-    def pluginAction(self, event: Event):
-        logger.info("PluginAction invoke")
-
-    @eventmanager.register(EventType.SiteDeleted)
-    def siteDeleted(self, event: Event):
-        logger.info("SiteDeleted invoke")
-
-    @eventmanager.register(EventType.DownloadAdded)
-    def downloadAdded(self, event: Event):
-        logger.info("DownloadAdded invoke")
-
-    @eventmanager.register(EventType.HistoryDeleted)
-    def historyDeleted(self, event: Event):
-        logger.info("HistoryDeleted invoke")
-
-    @eventmanager.register(EventType.NoticeMessage)
-    def noticeMessage(self, event: Event):
-        logger.info("NoticeMessage invoke")
-
-    @eventmanager.register(EventType.TransferComplete)
-    def transferComplete(self, event: Event):
-        logger.info("transferComplete invoke")
-
-    @eventmanager.register(EventType.SubscribeAdded)
-    def subscribeAdded(self, event: Event):
-        logger.info("SubscribeAdded invoke")
-
-    @eventmanager.register(EventType.SubscribeComplete)
-    def subscribeComplete(self, event: Event):
-        logger.info("SubscribeComplete invoke")
-
-    @eventmanager.register(EventType.SystemError)
-    def systemError(self, event: Event):
-        logger.info("SystemError invoke")
-
-    @eventmanager.register(EventType.SiteUpdated)
-    def siteUpdated(self, event: Event):
-        logger.info("SiteUpdated invoke")
-
-    @eventmanager.register(EventType.WebhookMessage)
-    def send(self, event: Event):
-        logger.info("send invoke")
 
     @eventmanager.register(EventType.DownloadCompleted)
     def on_download_completed(self, event: Event):
