@@ -80,10 +80,10 @@ class EmbyMediaRemove(_PluginBase):
     def get_api(self) -> List[Dict[str, Any]]:
         pass
 
-    def get_state(self) -> List[Dict[str, Any]]:
-        pass
+    def get_state(self):
+        return self._enabled
 
-    def get_page(self) -> List[Dict[str, Any]]:
+    def get_page(self) -> List[dict]:
         pass
 
     @eventmanager.register(EventType.WebhookMessage)
