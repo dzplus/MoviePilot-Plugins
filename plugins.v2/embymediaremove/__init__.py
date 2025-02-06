@@ -1,3 +1,5 @@
+import json
+
 from typing import Any, List, Dict, Tuple, Optional
 
 from app.core.event import eventmanager, Event
@@ -86,15 +88,46 @@ class EmbyMediaRemove(_PluginBase):
     def get_page(self) -> List[dict]:
         pass
 
-    @eventmanager.register(EventType.WebhookMessage)
-    def on_webhook_coming(self, event: Event):
-        logger.info(f"WebHook事件触发: {event}")
+    @eventmanager.register(EventType.PluginAction)
+    def on_plugin_action(self, event: Event):
+        logger.info(f"on_plugin_action事件触发: {event}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
+    @eventmanager.register(EventType.TransferComplete)
+    def on_transfer_complete(self, event: Event):
+        logger.info(f"on_transfer_complete事件触发: {event}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
+    @eventmanager.register(EventType.HistoryDeleted)
+    def on_history_deleted(self, event: Event):
+        logger.info(f"on_history_deleted事件触发: {event}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
+    @eventmanager.register(EventType.UserMessage)
+    def on_user_message(self, event: Event):
+        logger.info(f"on_user_message事件触发: {event}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
+    @eventmanager.register(EventType.DownloadDeleted)
+    def on_download_deleted(self, event: Event):
+        logger.info(f"on_download_deleted事件触发: {event}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
+    @eventmanager.register(EventType.DownloadFileDeleted)
+    def on_download_file_deleted(self, event: Event):
+        logger.info(f"on_download_file_deleted事件触发: {event}")
         # 在这里可以添加处理下载完成事件的具体逻辑
 
     @eventmanager.register(EventType.DownloadAdded)
     def on_download_completed(self, event: Event):
-        logger.info(f"下载添加事件触发: {event}")
+        logger.info(f"on_download_completed事件触发: {event}")
         # 在这里可以添加处理下载完成事件的具体逻辑
+
+    @eventmanager.register(EventType.WebhookMessage)
+    def on_webhook_coming(self, event: Event):
+        logger.info(f"on_webhook_coming事件触发: {event}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
 
     def stop_service(self):
         logger.info("stop_service")
