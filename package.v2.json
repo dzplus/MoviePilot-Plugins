@@ -1,8 +1,8 @@
 {
     "EmbyMediaRemove": {
-        "name": "Emby联动删除",
-        "description": "Emby删除媒体信息同步删除硬连接",
-        "labels": "媒体管理",
+        "name": "Emby删除同步",
+        "description": "Emby删除的媒体同步删除硬连接、源文件、下载记录",
+        "labels": "媒体库",
         "version": "0.95",
         "icon": "mediaplay.png",
         "author": "dzplus",
