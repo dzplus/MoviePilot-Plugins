@@ -15,7 +15,7 @@ class EmbyMediaRemove(_PluginBase):
     # 插件图标
     plugin_icon = "mediaplay.png"
     # 插件版本
-    plugin_version = "0.94"
+    plugin_version = "0.95"
     # 插件作者
     plugin_author = "dzplus"
     # 作者主页
@@ -86,9 +86,29 @@ class EmbyMediaRemove(_PluginBase):
     def get_page(self) -> List[dict]:
         pass
 
+    @eventmanager.register(EventType.PluginReload)
+    def on_plugin_reload(self, event: Event):
+        logger.info(f"on_plugin_reload事件触发: {event.__dict__}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
     @eventmanager.register(EventType.PluginAction)
     def on_plugin_action(self, event: Event):
         logger.info(f"on_plugin_action事件触发: {event.__dict__}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
+    @eventmanager.register(EventType.CommandExcute)
+    def on_command_excute(self, event: Event):
+        logger.info(f"on_command_excute事件触发: {event.__dict__}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
+    @eventmanager.register(EventType.SiteDeleted)
+    def on_site_deleted(self, event: Event):
+        logger.info(f"on_site_deleted事件触发: {event.__dict__}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
+    @eventmanager.register(EventType.SiteUpdated)
+    def on_site_updated(self, event: Event):
+        logger.info(f"on_site_deleted事件触发: {event.__dict__}")
         # 在这里可以添加处理下载完成事件的具体逻辑
 
     @eventmanager.register(EventType.TransferComplete)
@@ -96,19 +116,14 @@ class EmbyMediaRemove(_PluginBase):
         logger.info(f"on_transfer_complete事件触发: {event.__dict__}")
         # 在这里可以添加处理下载完成事件的具体逻辑
 
+    @eventmanager.register(EventType.DownloadAdded)
+    def on_download_completed(self, event: Event):
+        logger.info(f"on_download_completed事件触发: {event.__dict__}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
     @eventmanager.register(EventType.HistoryDeleted)
     def on_history_deleted(self, event: Event):
         logger.info(f"on_history_deleted事件触发: {event.__dict__}")
-        # 在这里可以添加处理下载完成事件的具体逻辑
-
-    @eventmanager.register(EventType.UserMessage)
-    def on_user_message(self, event: Event):
-        logger.info(f"on_user_message事件触发: {event.__dict__}")
-        # 在这里可以添加处理下载完成事件的具体逻辑
-
-    @eventmanager.register(EventType.DownloadDeleted)
-    def on_download_deleted(self, event: Event):
-        logger.info(f"on_download_deleted事件触发: {event.__dict__}")
         # 在这里可以添加处理下载完成事件的具体逻辑
 
     @eventmanager.register(EventType.DownloadFileDeleted)
@@ -116,9 +131,14 @@ class EmbyMediaRemove(_PluginBase):
         logger.info(f"on_download_file_deleted事件触发: {event.__dict__}")
         # 在这里可以添加处理下载完成事件的具体逻辑
 
-    @eventmanager.register(EventType.DownloadAdded)
-    def on_download_completed(self, event: Event):
-        logger.info(f"on_download_completed事件触发: {event.__dict__}")
+    @eventmanager.register(EventType.DownloadDeleted)
+    def on_download_deleted(self, event: Event):
+        logger.info(f"on_download_deleted事件触发: {event.__dict__}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
+    @eventmanager.register(EventType.UserMessage)
+    def on_user_message(self, event: Event):
+        logger.info(f"on_user_message事件触发: {event.__dict__}")
         # 在这里可以添加处理下载完成事件的具体逻辑
 
     @eventmanager.register(EventType.WebhookMessage)
@@ -126,6 +146,25 @@ class EmbyMediaRemove(_PluginBase):
         logger.info(f"on_webhook_coming事件触发: {event.__dict__}")
         # 在这里可以添加处理下载完成事件的具体逻辑
 
+    @eventmanager.register(EventType.NoticeMessage)
+    def on_notice_message(self, event: Event):
+        logger.info(f"on_notice_message事件触发: {event.__dict__}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
+    @eventmanager.register(EventType.SubscribeAdded)
+    def on_subscribe_added(self, event: Event):
+        logger.info(f"on_subscribe_added事件触发: {event.__dict__}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
+    @eventmanager.register(EventType.SubscribeComplete)
+    def on_subscribe_complete(self, event: Event):
+        logger.info(f"on_subscribe_complete事件触发: {event.__dict__}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
+
+    @eventmanager.register(EventType.SystemError)
+    def on_system_error(self, event: Event):
+        logger.info(f"on_system_error事件触发: {event.__dict__}")
+        # 在这里可以添加处理下载完成事件的具体逻辑
 
     def stop_service(self):
         logger.info("stop_service")
