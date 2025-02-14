@@ -24,5 +24,15 @@
             "v0.2": "支持Emby联动删除+",
             "v0.1": "支持Emby联动删除"
         }
-    }
+    },"RssDownload": {
+        "name": "RSS下载",
+        "description": "RSS下载",
+        "labels": "下载",
+        "version": "0.001",
+        "icon": "rss.png",
+        "author": "dzplus",
+        "level": 2,
+        "history": {
+            "v0.001": "RSS下载"
+        }
 }
