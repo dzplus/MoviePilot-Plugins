@@ -3,11 +3,12 @@
         "name": "Emby删除同步",
         "description": "Emby删除的媒体同步删除硬连接、源文件、下载记录",
         "labels": "媒体库",
-        "version": "0.95",
+        "version": "0.96",
         "icon": "mediaplay.png",
         "author": "dzplus",
         "level": 2,
         "history": {
+            "v0.96": "增加事件订阅",
             "v0.95": "增加事件订阅",
             "v0.94": "增加事件订阅",
             "v0.93": "加一个下载完成事件验证3",
@@ -22,17 +23,6 @@
             "v0.3": "增加一些事件注册+",
             "v0.2": "支持Emby联动删除+",
             "v0.1": "支持Emby联动删除"
-        }
-    },"RssDownload": {
-        "name": "RSS下载",
-        "description": "RSS下载",
-        "labels": "下载",
-        "version": "0.001",
-        "icon": "rss.png",
-        "author": "dzplus",
-        "level": 2,
-        "history": {
-            "v0.001": "RSS下载"
         }
     }
 }
