@@ -1,0 +1,15 @@
+{
+    "EmbySyncDel": {
+        "name": "Emby同步删除",
+        "description": "Emby 删除媒体后，通过 Webhook 同步删除整理历史、源文件和下载任务。",
+        "labels": "媒体库,文件整理",
+        "version": "2.0.0",
+        "icon": "https://raw.githubusercontent.com/dzplus/MoviePilot-Plugins/main/icons/embysyncdel.png",
+        "author": "dzplus",
+        "level": 1,
+        "system_version": ">=3.0.0",
+        "history": {
+            "v2.0.0": "适配 MoviePilot V3：使用 V3 SDK 与统一媒体身份；功能与 V2 版 1.1.0 一致，含路径映射自动检测、外部种子按源文件路径处理、文件夹事件忽略、清理日志按钮。"
+        }
+    }
+}
