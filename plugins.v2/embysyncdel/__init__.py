@@ -32,7 +32,7 @@ class EmbySyncDel(_PluginBase):
     # 插件图标
     plugin_icon = "https://raw.githubusercontent.com/dzplus/MoviePilot-Plugins/main/icons/embysyncdel.png"
     # 插件版本
-    plugin_version = "1.0.3"
+    plugin_version = "1.0.4"
     # 插件作者
     plugin_author = "dzplus"
     # 作者主页
@@ -259,7 +259,9 @@ class EmbySyncDel(_PluginBase):
                                         'component': 'VSwitch',
                                         'props': {
                                             'model': 'del_history',
-                                            'label': '删除历史',
+                                            'label': '清空删除记录',
+                                            'hint': '保存后清空详情页的删除记录',
+                                            'persistent-hint': True,
                                         }
                                     }
                                 ]
@@ -279,7 +281,9 @@ class EmbySyncDel(_PluginBase):
                                         'component': 'VTextField',
                                         'props': {
                                             'model': 'exclude_path',
-                                            'label': '排除路径'
+                                            'label': '排除路径',
+                                            'hint': '命中这些路径的媒体不做同步删除，转交云盘删除类插件处理；多个路径用英文逗号分隔',
+                                            'persistent-hint': True,
                                         }
                                     }
                                 ]
@@ -300,8 +304,10 @@ class EmbySyncDel(_PluginBase):
                                         'props': {
                                             'model': 'library_path',
                                             'rows': '2',
-                                            'label': '媒体库路径映射',
-                                            'placeholder': '媒体服务器路径:MoviePilot路径（一行一个）'
+                                            'label': '路径映射',
+                                            'placeholder': '/data:/mnt/link',
+                                            'hint': 'Emby 和 MoviePilot 看到的整理后路径不同时才填，每行一条"Emby路径:MoviePilot路径"；相同则留空',
+                                            'persistent-hint': True,
                                         }
                                     }
                                 ]
@@ -322,77 +328,17 @@ class EmbySyncDel(_PluginBase):
                                         'props': {
                                             'type': 'info',
                                             'variant': 'tonal',
-                                            'text': '1、需要Emby4.8.0.45及以上开启媒体删除的Webhook。'
-                                                    '2、启用该插件后，非媒体服务器触发的源文件删除，也会同步处理下载器中的下载任务。'
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        'component': 'VRow',
-                        'content': [
-                            {
-                                'component': 'VCol',
-                                'props': {
-                                    'cols': 12,
-                                },
-                                'content': [
-                                    {
-                                        'component': 'VAlert',
-                                        'props': {
-                                            'type': 'info',
-                                            'variant': 'tonal',
-                                            'text': '关于路径映射（转移后文件路径）：'
-                                                    'emby:/data/A.mp4,'
-                                                    'moviepilot:/mnt/link/A.mp4。'
-                                                    '路径映射填/data:/mnt/link。'
-                                                    '不正确配置会导致查询不到转移记录！（路径一样可不填）'
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        'component': 'VRow',
-                        'content': [
-                            {
-                                'component': 'VCol',
-                                'props': {
-                                    'cols': 12,
-                                },
-                                'content': [
-                                    {
-                                        'component': 'VAlert',
-                                        'props': {
-                                            'type': 'info',
-                                            'variant': 'tonal',
-                                            'text': '排除路径：命中排除路径后请求云盘删除插件删除云盘资源。'
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        'component': 'VRow',
-                        'content': [
-                            {
-                                'component': 'VCol',
-                                'props': {
-                                    'cols': 12,
-                                },
-                                'content': [
-                                    {
-                                        'component': 'VAlert',
-                                        'props': {
-                                            'type': 'info',
-                                            'variant': 'tonal',
-                                            'text': '使用说明（Webhook 配置与路径映射）：'
-                                                    'https://github.com/dzplus/MoviePilot-Plugins/blob/main/plugins.v2/embysyncdel/README.md'
-                                        }
+                                        },
+                                        'content': [
+                                            {
+                                                'component': 'div',
+                                                'html': '在 Emby（4.8.0.45 及以上）的通知设置里添加 Webhook，'
+                                                        '地址填 <code>http://MoviePilot地址/api/v1/webhook/?token=API令牌</code>，'
+                                                        '勾选媒体库的删除事件。启用插件后，在 MoviePilot 里删除源文件也会同步处理下载器中的种子。'
+                                                        '<a href="https://github.com/dzplus/MoviePilot-Plugins/blob/main/plugins.v2/embysyncdel/README.md"'
+                                                        ' target="_blank">使用说明</a>'
+                                            }
+                                        ]
                                     }
                                 ]
                             }
