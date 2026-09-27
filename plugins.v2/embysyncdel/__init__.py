@@ -1,6 +1,8 @@
+import json
 import os
 import shutil
 import time
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import List, Tuple, Dict, Any, Optional
 
@@ -32,7 +34,7 @@ class EmbySyncDel(_PluginBase):
     # 插件图标
     plugin_icon = "https://raw.githubusercontent.com/dzplus/MoviePilot-Plugins/main/icons/embysyncdel.png"
     # 插件版本
-    plugin_version = "1.0.4"
+    plugin_version = "1.1.0"
     # 插件作者
     plugin_author = "dzplus"
     # 作者主页
@@ -114,6 +116,13 @@ class EmbySyncDel(_PluginBase):
                 "methods": ["POST"],
                 "auth": "bear",
                 "summary": "清理插件日志"
+            },
+            {
+                "path": "/detect_mapping",
+                "endpoint": self.detect_mapping,
+                "methods": ["POST"],
+                "auth": "bear",
+                "summary": "重新检测路径映射"
             }
         ]
 
@@ -176,6 +185,168 @@ class EmbySyncDel(_PluginBase):
                 continue
         return total
 
+    def detect_mapping(self):
+        """
+        重新检测路径映射（详情页按钮）
+        """
+        result = self.__detect_path_mapping(force=True)
+        return schemas.Response(success=result.get("status") != "none", message=result.get("message"))
+
+    def __detect_path_mapping(self, force: bool = False) -> Dict[str, Any]:
+        """
+        取最近的整理记录，按 TMDB 编号到 Emby 查同一个文件，对比两侧路径推算路径映射；结果缓存一小时
+        """
+        cache = self.get_data("path_mapping_detect")
+        if not force and cache and time.time() - cache.get("ts", 0) < 3600:
+            return cache
+        result = {"ts": time.time(), "status": "none", "suggestion": "", "samples": [], "message": ""}
+        embys = [service.instance for service in MediaServerHelper().get_services().values()
+                 if service.type == "emby" and service.instance]
+        if not embys:
+            result["message"] = "未配置 Emby 媒体服务器，无法自动检测路径映射"
+            self.save_data("path_mapping_detect", result)
+            return result
+        samples = []
+        scanned = with_tmdb = lookups = 0
+        # 最近的记录可能整批没有 TMDB 编号（例如番号片），所以往前多翻，只拿有编号的记录去 Emby 查，并限制查询次数
+        for record in TransferHistory.list_by_page(db=None, page=1, count=200, status=True) or []:
+            if len(samples) >= 10 or lookups >= 20:
+                break
+            scanned += 1
+            if not record.dest or not record.tmdbid or (record.dest_storage or "local") != "local":
+                continue
+            with_tmdb += 1
+            lookups += 1
+            file_name = Path(record.dest).name
+            for emby in embys:
+                emby_path = next((p for p in self.__emby_paths_for(emby, record)
+                                  if Path(p.replace('\\', '/')).name == file_name), None)
+                if not emby_path:
+                    continue
+                mapping = self.__split_mapping(emby_path, record.dest)
+                if mapping is not None:
+                    samples.append({"title": record.title, "emby": emby_path, "mp": record.dest, "mapping": mapping})
+                break
+        result["samples"] = samples
+        pairs = Counter(s["mapping"] for s in samples if s["mapping"])
+        if not samples:
+            result["message"] = (f"无法自动检测路径映射：查看了最近 {scanned} 条整理记录，其中 {with_tmdb} 条有 TMDB 编号，"
+                                 f"在 Emby 里都没有找到对应文件")
+        elif not pairs:
+            result["status"] = "same"
+            result["message"] = f"已检测 {len(samples)} 条样本：Emby 和 MoviePilot 看到的路径一致，无需填写路径映射"
+        else:
+            targets = defaultdict(set)
+            for pair in pairs:
+                emby_prefix, mp_prefix = pair.split(":", 1)
+                targets[emby_prefix].add(mp_prefix)
+            if any(len(mp_prefixes) > 1 for mp_prefixes in targets.values()):
+                result["status"] = "conflict"
+                result["message"] = f"已检测 {len(samples)} 条样本，结论不一致，请参考使用说明手动填写路径映射"
+            else:
+                result["status"] = "mapping"
+                result["suggestion"] = "\n".join(sorted(pairs))
+                result["message"] = (f"已检测 {len(samples)} 条样本：建议路径映射填写 {'、'.join(sorted(pairs))}"
+                                     f"（{sum(pairs.values())}/{len(samples)} 条需要映射）")
+        self.save_data("path_mapping_detect", result)
+        return result
+
+    def __emby_paths_for(self, emby, record) -> List[str]:
+        """
+        按整理记录的 TMDB 编号在 Emby 里找同一部电影或同一部剧的全部单集，返回它们在 Emby 侧的文件路径
+        """
+        if record.type == MediaType.MOVIE.value:
+            items = self.__emby_items(emby, "[HOST]emby/Items?Recursive=true&IncludeItemTypes=Movie&Fields=Path"
+                                            f"&AnyProviderIdEquals=tmdb.{record.tmdbid}&api_key=[APIKEY]")
+        else:
+            items = []
+            for series in self.__emby_items(emby, "[HOST]emby/Items?Recursive=true&IncludeItemTypes=Series"
+                                                  f"&AnyProviderIdEquals=tmdb.{record.tmdbid}&api_key=[APIKEY]")[:1]:
+                items = self.__emby_items(emby, f"[HOST]emby/Items?Recursive=true&ParentId={series.get('Id')}"
+                                                "&IncludeItemTypes=Episode&Fields=Path&api_key=[APIKEY]")
+        return [item.get("Path") for item in items if item.get("Path")]
+
+    @staticmethod
+    def __emby_items(emby, url: str) -> List[dict]:
+        """
+        通过 MoviePilot 已配置的 Emby 实例请求 Items 接口
+        """
+        res = emby.get_data(url)
+        if not res or res.status_code != 200:
+            return []
+        try:
+            return res.json().get("Items") or []
+        except Exception:
+            return []
+
+    @staticmethod
+    def __split_mapping(emby_path: str, mp_path: str) -> Optional[str]:
+        """
+        对比同一个文件在 Emby 和 MoviePilot 两侧的路径，去掉相同的尾部，剩下的前缀即路径映射；
+        两侧完全相同返回空串，连文件名都不同返回 None
+        """
+        emby_parts = Path(emby_path.replace('\\', '/')).parts
+        mp_parts = Path(mp_path).parts
+        same = 0
+        while same < min(len(emby_parts), len(mp_parts)) and emby_parts[-1 - same] == mp_parts[-1 - same]:
+            same += 1
+        if not same:
+            return None
+        emby_prefix = Path(*emby_parts[:len(emby_parts) - same]).as_posix() if len(emby_parts) > same else ""
+        mp_prefix = Path(*mp_parts[:len(mp_parts) - same]).as_posix() if len(mp_parts) > same else ""
+        if emby_prefix == mp_prefix:
+            return ""
+        return f"{emby_prefix}:{mp_prefix}"
+
+    def __mapping_detect_alert(self, for_form: bool) -> dict:
+        """
+        拼装路径映射检测结论：配置页附"填入检测结果"按钮，详情页附"重新检测"按钮
+        """
+        try:
+            result = self.__detect_path_mapping()
+        except Exception as e:
+            logger.error(f"检测路径映射失败：{e}")
+            result = {"status": "none", "message": f"检测路径映射失败：{e}"}
+        content = [{'component': 'span', 'text': result.get("message")}]
+        if for_form and result.get("suggestion"):
+            # 配置页按钮在表单数据上执行，直接把建议写进路径映射输入框，用户保存后生效
+            content.append({
+                'component': 'VBtn',
+                'props': {
+                    'size': 'small',
+                    'variant': 'tonal',
+                    'class': 'ms-2',
+                    'onClick': f"function() {{ model.library_path = {json.dumps(result['suggestion'])}; }}",
+                },
+                'text': '填入检测结果',
+            })
+        elif not for_form:
+            content.append({
+                'component': 'VBtn',
+                'props': {
+                    'size': 'small',
+                    'variant': 'tonal',
+                    'class': 'ms-2',
+                },
+                'text': '重新检测',
+                'events': {
+                    'click': {
+                        'api': f'plugin/{self.__class__.__name__}/detect_mapping',
+                        'method': 'post',
+                    }
+                },
+            })
+        return {
+            'component': 'VAlert',
+            'props': {
+                'type': {"same": "success", "mapping": "warning", "conflict": "error"}.get(result.get("status"), "info"),
+                'variant': 'tonal',
+                'density': 'compact',
+                'class': 'mt-2' if for_form else 'mb-3',
+            },
+            'content': content,
+        }
+
     def get_service(self) -> List[Dict[str, Any]]:
         """
         注册插件公共服务
@@ -193,6 +364,7 @@ class EmbySyncDel(_PluginBase):
         """
         拼装插件配置页面，需要返回两块数据：1、页面配置；2、数据结构
         """
+        mapping_detect = self.__mapping_detect_alert(for_form=True)
         return [
             {
                 'component': 'VForm',
@@ -309,7 +481,8 @@ class EmbySyncDel(_PluginBase):
                                             'hint': 'Emby 和 MoviePilot 看到的整理后路径不同时才填，每行一条"Emby路径:MoviePilot路径"；相同则留空',
                                             'persistent-hint': True,
                                         }
-                                    }
+                                    },
+                                    mapping_detect
                                 ]
                             }
                         ]
@@ -391,11 +564,13 @@ class EmbySyncDel(_PluginBase):
                 }
             ]
         }
+        mapping_detect = self.__mapping_detect_alert(for_form=False)
         # 查询同步详情
         historys = self.get_data('history')
         if not historys:
             return [
                 log_toolbar,
+                mapping_detect,
                 {
                     'component': 'div',
                     'text': '暂无数据',
@@ -549,6 +724,7 @@ class EmbySyncDel(_PluginBase):
 
         return [
             log_toolbar,
+            mapping_detect,
             {
                 'component': 'div',
                 'props': {
